@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="bower_components/d3/d3.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/jquery.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/geometry.css">
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            /**
+             * The cookie circles
+             * @type {Array}
+             */
+            var circles = [
+                {
+                    name: "circle1",
+                    x: 130,
+                    y: 150,
+                    radius: 90,
+                    duration: 1000
+                }
+            ];
+
+            /*
+             * Add this to the above circles for a second delicious cookie
+             {
+             name: "circle2",
+             x: 100,
+             y: 350,
+             radius: 90,
+             duration: 1000
+             }
+             */
+
+            var svgContainer = d3.select(".demo-svg");
+
+            var svgClipContainer = svgContainer.selectAll("clipPath")
+                    .data(circles)
+                    .enter()
+                    .append("clipPath");
+
+            var svgClips = svgClipContainer
+                    .attr("id", function(circle) {
+                        return circle.name;
+                    });
+
+            var svgRects = svgClips
+                    .append("rect")
+                    .attr("x", function(circle) {
+                        return circle.x - circle.radius - 5;
+                    })
+                    .attr("y", function(circle) {
+                        return circle.y + circle.radius + 5;
+                    })
+                    .attr("width", function(circle) {
+                        return circle.x + circle.radius;
+                    })
+                    .attr("height", function(circle) {
+                        return circle.y + circle.radius;
+                    });
+
+            var group = svgContainer.selectAll("g.circle")
+                    .data(circles)
+                    .enter()
+                    .append("g");
+
+            var bottomCookie = group.append("circle");
+            bottomCookie
+                    .attr("cx", function(circle) {
+                        return circle.x;
+                    })
+                    .attr("cy", function(circle) {
+                        return circle.y;
+                    })
+                    .attr("r", function (circle) {
+                        return circle.radius + 4;
+                    })
+                    .attr("fill", "url(#bottom-cookie)")
+                    .attr("class", "circleFill");
+
+            var creamOfCookies = group.append("circle");
+            creamOfCookies
+                    .attr("cx", function(circle) {
+                        return circle.x;
+                    })
+                    .attr("cy", function(circle) {
+                        return circle.y;
+                    })
+                    .attr("r", function (circle) {
+                        return circle.radius;
+                    })
+                    .attr("fill", "url(#cookie-cream)")
+                    .attr("class", "circleNoFill");
+
+            var topCookie = group.append("circle");
+            topCookie
+                    .attr("cx", function(circle) {
+                        return circle.x;
+                    })
+                    .attr("cy", function(circle) {
+                        return circle.y;
+                    })
+                    .attr("r", function (circle) {
+                        return circle.radius + 5;
+                    })
+                    .attr("fill", "url(#cookie)")
+                    .attr("class", "circleFill")
+                    .attr("clip-path", function(circle) {
+                        return "url(#" + circle.name + ")";
+                    });
+
+            var text = group.append("text")
+                    .attr("x", function(circle) {
+                        return circle.x - 28;
+                    })
+                    .attr("y", function (circle) {
+                        return circle.y + circle.radius - 5;
+                    })
+                    .attr("class", "percent");
+
+            updateCookiePercent(100);
+
+            $("#submitButton").click(function(){
+                var v =  $("#interval").val();
+                if (v && !isNaN(+v)) {
+                    if(v < 0) {
+                        v = 0;
+                    }
+                    if(v > 100) {
+                        v = 100;
+                    }
+                    updateCookiePercent(v);
+                }
+            });
+
+            function updateCookiePercent(percent) {
+                //invert it
+                percent = 100 - percent;
+                percent *= .01;
+                svgRects.transition()
+                        .attr("x", function (circle) {
+                            return circle.x - circle.radius - 5;
+                        })
+                        .attr("y", function (circle) {
+                            return (circle.y - circle.radius + (circle.radius * 2) * percent) - 5;
+                        })
+                        .attr("width", function(circle) {
+                            return circle.x + circle.radius;
+                        })
+                        .attr("height", function(circle) {
+                            return circle.y + circle.radius;
+                        })
+                        .duration(function(circle) {
+                            return circle.duration;
+                        });
+                text.transition()
+                        .attr("x", function (circle) {
+                            return circle.x - 28;
+                        })
+                        .attr("y", function (circle) {
+                            var newY = (circle.y - circle.radius + (circle.radius * 2) * percent) - 5;
+                            if(newY > circle.y) {
+                                return newY;
+                            } else {
+                                return circle.y;
+                            }
+                        })
+                        .tween("text", function() {
+                            var currentpercent;
+                            if(this.textContent.length > 0) {
+                                currentpercent = this.textContent.substring(0,this.textContent.length - 1);
+                            } else {
+                                currentpercent = 0;
+                            }
+                            var percentFunction = d3.interpolateRound(parseInt(currentpercent), 100 - (percent * 100));
+                            return function(t) {
+                                this.textContent = percentFunction(t) + "%";
+                            };
+                        })
+                        .style("fill", function() {
+                            if(percent < .5) {
+                                return "#ffffff";
+                            } else {
+                                return "#393939";
+                            }
+                        })
+                        .duration(function(circle) {
+                            return circle.duration;
+                        });
+            }
+
+            /**
+             * Returns a random integer between min and max
+             * Using Math.round() will give you a non-uniform distribution!
+             */
+            function getRandomInt (min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            //Updates the interval
+            setInterval(function(){
+                updateCookiePercent(getRandomInt(1, 100));
+            },1000);
+        });
+    </script>
+</head>
+<body>
+    <div class="demo-container">
+        <svg class="demo-svg" width="100" height="500">
+            <defs>
+                <pattern id="cookie" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <rect width='50' height='50' fill='#282828'></rect>
+                    <circle cx='3' cy='4.3' r='1.8' fill='#393939'></circle>
+                    <circle cx='3' cy='3' r='1.8' fill='#191919'></circle>
+                    <circle cx='10.5' cy='12.5' r='1.8' fill='#393939'></circle>
+                    <circle cx='10.5' cy='11.3' r='1.8' fill='black'></circle>
+                </pattern>
+                <pattern id="bottom-cookie" width="2" height="2" patternUnits="userSpaceOnUse">
+                    <rect width='5' height='5' fill='#393939'></rect>
+                    <rect width='1' height='1' fill='#282828'></rect>
+                </pattern>
+                <pattern id="cookie-cream" width="4" height="4" patternUnits="userSpaceOnUse">
+                    <rect width='5' height='5' fill='#FFFFF0'></rect>
+                    <rect width='1' height='1' fill='#e4e4d5'></rect>
+                </pattern>
+            </defs>
+        </svg>
+        <div class="sidebar">
+            <h1>
+                Delicious Cookie Progress
+            </h1>
+            <p>
+                Every second, this updates a new delicious cookie progress update for both progress bars utilizing
+                <a href="http://d3js.org/">d3js</a>.
+            </p>
+            <h3>
+                This demonstrates a few concepts from d3js
+            </h3>
+            <ul>
+                <li>
+                    Basic Shape usage
+                </li>
+                <li>
+                    Basic Grouping
+                </li>
+                <li>
+                    Transformations of D3 Elements
+                </li>
+                <li>
+                    Patterns
+                </li>
+                <li>
+                    Thinking with joins
+                </li>
+                <li>
+                    interpolation
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
