@@ -3,7 +3,7 @@ delicious-cookie
 
 This is an example cookie progress bar based off of d3js.
 
-Demo is here https://rawgithub.com/FrankHassanabad/delicious-cookie/master/index.html
+[Online Demo, click here](https://rawgithub.com/FrankHassanabad/delicious-cookie/master/index.html)
 
 <p align="center">
   <img src="readme-media/cookie-screen-shot.png?raw=true" alt="Cookie Screen Shot"/>
