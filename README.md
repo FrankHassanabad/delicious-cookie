@@ -21,7 +21,7 @@ This is an example cookie progress bar based off of d3js.  It shows
 git clone https://github.com/FrankHassanabad/delicious-cookie.git
 ```
 
-Then open up a web browser to
+Then open up a web browser to your local file system at
 ```
-http://localhost:5000/delicious-cookie/index.html
+delicious-cookie/index.html
 ```
